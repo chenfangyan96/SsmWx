@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Wx.dao.UserDao">
+    <resultMap id="BaseResultMap" type="Wx.model.User">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="username" property="username" jdbcType="VARCHAR" />
+        <result column="password" property="password"  />
+        <result column="status" property="status"  />
+    </resultMap>
+    <!-- 查询所有用户 -->
+    <select id="findAllUser" resultMap="BaseResultMap">
+		select * from sys_user
+	</select>
+    <!-- 查询固定姓名的用户 -->
+    <select id="findByName" resultMap="BaseResultMap">
+		select * from sys_user where username=#{username,jdbcType=VARCHAR}
+	</select>
+    <update id="update" parameterType="Wx.model.User">
+       update  sys_user
+       <set>
+           <if test="username !=null and username != ''">
+               username=#{username},
+           </if>
+           <if test="password !=null and password !='' ">
+               password=#{password},
+           </if>
+           <if  test="status !=null and status !='' ">
+               status =#{status}
+           </if>
+       </set>
+       where  id =#{id}
+    </update>
+    <delete id="delete" >
+        delete from sys_user WHERE id=#{id,jdbcType=BIGINT}
+    </delete>
+
+</mapper>
