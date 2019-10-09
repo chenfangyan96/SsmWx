@@ -6,9 +6,12 @@ import Wx.Service.WxService;
 import Wx.dao.webAccessToken;
 import Wx.model.User;
 import Wx.util.CacheUtil;
+import Wx.util.Decript;
+import Wx.util.WxUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.google.code.kaptcha.Constants;
 import com.google.code.kaptcha.Producer;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -17,16 +20,14 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.HttpServletRequest
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Controller
 @RequestMapping("/test")
@@ -39,38 +40,40 @@ public class test {
     @Autowired
     private Producer captchaProducer = null;
     @Autowired
-    private WxService wxService;
+    public  WxService wxService;
     //获取用户信息
     private  static  String userinfo="https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=APPID&grant_type=refresh_token&refresh_token=REFRESH_TOKEN";
     private static final String KAPTCHA_SESSION_KEY = com.google.code.kaptcha.Constants.KAPTCHA_SESSION_KEY;
     @RequestMapping("/login")
-    public  String  login(HttpServletRequest request,Model model)
+    public  String  login(HttpServletRequest request,Model model){
+        String name = request.getParameter("username");
+        String password = request.getParameter("password");
+        String kaptcha = request.getParameter("kaptcha");
+        HttpSession session = request.getSession();
+        String  attribute = (String)session.getAttribute(KAPTCHA_SESSION_KEY);
+        logger.info(attribute);
+        if (!attribute.equals(kaptcha)){
+            model.addAttribute("msg","您输入的验证码有误，请重新输入");
+            return "/login1";
+        }else {
+            return "/main";
+        }
+
+    }
     @RequestMapping("/tomy")
     public String person(String code,Model model){
         logger.info("获取到用户的code码"+code);
         String web_token=null;
         String openid =null;
-
-        webAccessToken  web_access_token1= (webAccessToken)CacheUtil.getMap("web_access_token");
-        if (StringUtils.isEmpty(webAccessToken)){
-            JSONObject web_access_token = WxService.get_WEB_access_Token(code);
-           openid = web_access_token.getString("openid");
-            HashMap<String,String> hello =new HashMap<>();
-            hello.put("web_token",web_access_token.getString("access_token"));
-            hello.put("openid",web_access_token.getString("openid"));
-           CacheUtil.setMap("web_access_token"+,hello);
-           CacheUtil.setExp("web_access_token",7200);
-
-        }else {
-          web_token=  web_access_token1.getAccess_token();
-          openid= web_access_token1.getOpenid();
-        }
-        JSONObject userinfo = WxService.userinfo(web_token, openid);
+        JSONObject web_access_token = wxService.get_WEB_access_Token(code);
+        openid = web_access_token.getString("openid");
+        web_token=web_access_token.getString("access_token");
+        JSONObject userinfo = wxService.userinfo(web_token, openid);
+        logger.info("获取到的用户信息为"+userinfo);
         Set<Map.Entry<String,Object>> entries= userinfo.entrySet();
         for (Map.Entry<String,Object> entry:entries){
             model.addAttribute(entry.getKey(),entry.getValue());
         }
-
         return "/person";
     }
 
@@ -129,6 +132,24 @@ public class test {
     public String toinitConfig(){
         return  "/reply/config";
     }
+    @RequestMapping("/luck")
+    public String luck(Model model,HttpServletRequest  request){
+        String token = wxService.getToken();
+        String jspi = wxService.getJspi(token);
+        logger.info("jspi====="+jspi);
+        String  noncevalue= RandomStringUtils.randomAlphanumeric(10).toString();
+        String timestampvalue = (new Date().getTime() / 1000)+"";
+        logger.info("nonce"+noncevalue);
+        logger.info("timestamp"+timestampvalue);
+        String requestURI = request.getRequestURL().toString();
+        logger.info("requersturl"+requestURI);
+        String signvlue = WxUtil.signature(jspi,timestampvalue,noncevalue,requestURI);
+        logger.info("signvalue"+signvlue);
+        model.addAttribute("nonce",noncevalue);
+        model.addAttribute("timestampvalue",timestampvalue);
+        model.addAttribute("signvalue",signvlue);
+        return  "/gift";
+    }
 
     @RequestMapping("/delete")
     @ResponseBody
@@ -179,13 +200,12 @@ public class test {
     @RequestMapping("/redis")
     public String redisTest() {
         try {
-            boolean b = CacheUtil.setString("123", "redis");//向redis里存字符串 key-value
-            System.out.println(b);//true成功，
-            System.out.println(CacheUtil.getString("123"));//从radis里取数据 key
+            String token = wxService.getToken();
+            System.out.println(token);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
-        return "hello";
+        return "/hello";
     }
 }

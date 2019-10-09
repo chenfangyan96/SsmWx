@@ -15,6 +15,9 @@
     <select id="findByName" resultMap="BaseResultMap">
 		select * from sys_user where username=#{username,jdbcType=VARCHAR}
 	</select>
+    <select id="findByUserandPwd" resultMap="BaseResultMap">
+		select * from sys_user where username=#{username,jdbcType=VARCHAR}and password=#{password,jdbcType}
+	</select>
     <update id="update" parameterType="Wx.model.User">
        update  sys_user
        <set>

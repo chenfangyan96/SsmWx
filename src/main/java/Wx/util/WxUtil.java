@@ -51,6 +51,20 @@ public class WxUtil {
             return sbuilder.toString();
         }
     /**
+     * js接口签名校验
+     * @param token  token
+     * @param timestamp时间戳
+     * @param nonce
+     * @return 排序后的字符串
+     */
+    public  static  String signature(String sapi_ticket, String timestamp, String  noncestr,String url1){
+        String string1 = "jsapi_ticket=" + sapi_ticket
+                + "&noncestr=" + noncestr + "&timestamp=" + timestamp + "&url="
+                + url1;
+        String s = Decript.SHA1(string1);
+        return  s;
+    }
+    /**
      * 获取access-token的url
      * @param url  地址
      */

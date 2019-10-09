@@ -71,7 +71,7 @@
 </head>
 <body>
 
-   <div class="head"><a href="index.html" class="return"></a>个人信息 <a href="编辑个人信息.html" class="operation">编辑</a></div>
+   <div class="head">个人信息 </div>
 
    <div class="personal f15" style="padding-top: 50px;">
           	<div class="weui-cells m0">

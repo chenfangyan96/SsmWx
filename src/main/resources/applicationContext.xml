@@ -63,4 +63,5 @@
         <property name="basePackage" value="Wx.dao"/>
      </bean>
     <import resource="Spring-redis.xml"/>
+
 </beans>

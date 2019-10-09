@@ -296,7 +296,7 @@ public class CacheUtil {
      * @return	true:成功
      * 		false:失败
      */
-    public static boolean setString(String key, String value, long seconds) {
+    public static boolean  setString(String key, String value, long seconds) {
         LOG.debug(" setString key :{}, value: {}, timeout:{}", key, value, seconds);
         try {
             if (isClose() || isEmpty(key) || isEmpty(value)) {

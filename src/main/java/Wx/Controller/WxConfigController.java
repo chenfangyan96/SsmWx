@@ -38,7 +38,7 @@ public class WxConfigController   {
             return echostr;
             //resp.getWriter().println(echostr); //如果检验成功输出echostr，微信服务器接收到此输出，才会确认检验完成。
         } else {
-            System.out.println("签名校验失败。");
+
             logger.info("------签名校验失败----------");
             return  null;
         }
